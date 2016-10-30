@@ -135,3 +135,15 @@ get '/video/watch/:id' do
   end
 end
 
+get '/video/:id/delete' do
+  @video = Video.get params[:id]
+  @title = "Confirm deletion of note ##{params[:id]}"
+  erb :delete
+end
+
+delete '/video/:id' do
+  video = Video.get params[:id]
+  video.attachments.destroy
+  video.destroy
+  redirect '/'
+end

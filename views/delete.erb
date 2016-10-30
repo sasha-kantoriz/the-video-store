@@ -1,0 +1,10 @@
+<% if @video %>
+  <p>Are you sure you want to delete?: <em>"<%= @video.title %>"</em>?</p>
+  <form action="/video/<%= @video.id %>" method="post">
+    <input type="hidden" name="_method" value="delete">
+    <input type="submit" value="Delete">
+    <a href="/<%= @video.id %>">Cancel</a>
+  </form>
+<% else %>
+  <p>Video not found.</p>
+<% end %>
