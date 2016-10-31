@@ -1,13 +1,12 @@
 require './database'
 require './config/config_reader'
 
-
 enable :sessions
+set :session_secret, @os_env[:sessions]
 
 before do
   headers "Content-Type" => "text/html; charset=utf-8"
   @logins = $config.admin_users
-  p @logins
 end
 
 get '/' do
@@ -16,7 +15,7 @@ get '/' do
 end
 
 post '/video/create' do  
-  video            = Video.new(params[:video])
+  video            = create_video(params[:video])
   image_attachment = video.attachments.new
   video_attachment = video.attachments.new
   image_attachment.handle_upload(params['image-file'])
@@ -82,8 +81,8 @@ get '/login' do
 end
 
 post '/login' do
-  username = params[:username]
-  password = params[:password]
+  username = h(params[:username])
+  password = h(params[:password])
 
   if @logins[username] && @logins[username] == password
     session[:token] = token(username)
@@ -98,64 +97,58 @@ post '/logout' do
   redirect '/'
 end
 
-def token username
-  JWT.encode payload(username), ENV['JWT_SECRET'], 'HS256'
-end
+helpers do
+  def h(text)
+    Rack::Utils.escape_html(text)
+  end
 
-def payload username
-  {
-    exp: Time.now.to_i + 60 * 60,
-    iat: Time.now.to_i,
-    iss: ENV['JWT_ISSUER'],
-    scopes: ['watch_video', 'upload_video', 'delete_video'],
-    user: {
-      username: username
+  def token username
+    JWT.encode payload(username), ENV['JWT_SECRET'], 'HS256'
+  end
+
+  def payload username
+    {
+      exp: Time.now.to_i + 60 * 60,
+      iat: Time.now.to_i,
+      iss: ENV['JWT_ISSUER'],
+      scopes: ['watch_video', 'upload_video', 'delete_video'],
+      user: {
+        username: username
+      }
     }
-  }
-end
+  end
 
-def process_request req, scope
-  begin
-    options = { algorithm: 'HS256', iss: ENV['JWT_ISSUER'] }
-    payload, header = JWT.decode session[:token], ENV['JWT_SECRET'], true, options
+  def process_request req, scope
+    begin
+      options = { algorithm: 'HS256', iss: ENV['JWT_ISSUER'] }
+      payload, header = JWT.decode session[:token], ENV['JWT_SECRET'], true, options
 
-    scopes, user = payload['scopes'], payload['user']
-    username = user['username'].to_sym
+      scopes, user = payload['scopes'], payload['user']
+      username = user['username'].to_sym
 
-    if @logins[username] && scopes.include?(scope)
-      yield req, username
-    else
-      redirect '/login'
+      if @logins[username] && scopes.include?(scope)
+        yield req, username
+      else
+        redirect '/login'
+      end
+
+    rescue JWT::DecodeError
+      [401, { 'Content-Type' => 'text/plain' }, ['A token must be passed.']]
+    rescue JWT::ExpiredSignature
+      [403, { 'Content-Type' => 'text/plain' }, ['The token has expired.']]
+    rescue JWT::InvalidIssuerError
+      [403, { 'Content-Type' => 'text/plain' }, ['The token does not have a valid issuer.']]
+    rescue JWT::InvalidIatError
+      [403, { 'Content-Type' => 'text/plain' }, ['The token does not have a valid "issued at" time.']]
     end
-
-  rescue JWT::DecodeError
-    [401, { 'Content-Type' => 'text/plain' }, ['A token must be passed.']]
-  rescue JWT::ExpiredSignature
-    [403, { 'Content-Type' => 'text/plain' }, ['The token has expired.']]
-  rescue JWT::InvalidIssuerError
-    [403, { 'Content-Type' => 'text/plain' }, ['The token does not have a valid issuer.']]
-  rescue JWT::InvalidIatError
-    [403, { 'Content-Type' => 'text/plain' }, ['The token does not have a valid "issued at" time.']]
   end
-end
 
-def call env
-  begin
-    options = { algorithm: 'HS256', iss: ENV['JWT_ISSUER'] }
-    bearer = env.fetch('HTTP_AUTHORIZATION', '').slice(7..-1)
-    payload, header = JWT.decode bearer, ENV['JWT_SECRET'], true, options
-
-    env[:scopes] = payload['scopes']
-    env[:user] = payload['user']
-
-    #@app.call env
-  rescue JWT::DecodeError
-    [401, { 'Content-Type' => 'text/plain' }, ['A token must be passed.']]
-  rescue JWT::ExpiredSignature
-    [403, { 'Content-Type' => 'text/plain' }, ['The token has expired.']]
-  rescue JWT::InvalidIssuerError
-    [403, { 'Content-Type' => 'text/plain' }, ['The token does not have a valid issuer.']]
-  rescue JWT::InvalidIatError
-    [403, { 'Content-Type' => 'text/plain' }, ['The token does not have a valid "issued at" time.']]
+  def create_video(video)
+    escaped_video = {}
+    video.each do |k,v|
+      escaped_video[k] = h(v)
+    end
+    Video.new(escaped_video)
   end
+
 end
