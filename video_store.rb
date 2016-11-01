@@ -35,6 +35,15 @@ get '/video/new' do
   end
 end
 
+get '/video/delete/:id' do
+  process_request request, 'delete_video' do |req, username|
+    video = Video.get params[:id]
+    video.attachments.destroy
+    video.destroy
+    redirect '/'
+  end
+end
+
 get '/video/list' do
   @title = 'Available Videos'
   @videos = Video.all(:order => [:title.desc])
@@ -152,3 +161,4 @@ helpers do
   end
 
 end
+

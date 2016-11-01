@@ -1,16 +1,16 @@
 # Set the working application directory
 # working_directory "/path/to/your/app"
-working_directory "/home/lol/Documents/site_test/test_deploy/the-video-store"
+working_directory "/home/dp/Documents/dp/the-video-store"
 
 # Unicorn PID file location
 # pid "/path/to/pids/unicorn.pid"
-pid "/home/lol/Documents/site_test/test_deploy/the-video-store/pids/unicorn.pid"
+pid "/home/dp/Documents/dp/the-video-store/pids/unicorn.pid"
 
 # Path to logs
 # stderr_path "/path/to/logs/unicorn.log"
 # stdout_path "/path/to/logs/unicorn.log"
-stderr_path "/home/lol/Documents/site_test/test_deploy/logs/unicorn.log"
-stdout_path "/home/lol/Documents/site_test/test_deploy/logs/unicorn.log"
+stderr_path "/home/dp/Documents/dp/logs/unicorn.log"
+stdout_path "/home/dp/Documents/dp/logs/unicorn.log"
 
 # Unicorn socket
 # listen "/tmp/unicorn.[app name].sock"
