@@ -23,10 +23,11 @@ end
 @config_reader = ConfigReader.new
 $config = @config_reader.get_config
 
-@os_env = {
+$os_env = {
   :sessions => ENV['SESSION_COOKIE_SECRET'],
   :jwt_sec => ENV['JWT_SECRET'],
-  :jwt_iss => ENV['JWT_ISSUER']
+  :jwt_iss => ENV['JWT_ISSUER'],
+  :home => ENV['JOKESTIME_HOME']
 }
 
-abort("Not available ENV variables.") if @os_env.any? {|k,v| v.nil?}
+abort("Not available ENV variables.") if $os_env.nil? || $os_env.any? {|k,v| v.nil?}

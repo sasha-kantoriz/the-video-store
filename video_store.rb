@@ -2,7 +2,7 @@ require './database'
 require './config/config_reader'
 
 enable :sessions
-set :session_secret, @os_env[:sessions]
+set :session_secret, $os_env[:sessions]
 
 before do
   headers "Content-Type" => "text/html; charset=utf-8"
@@ -61,7 +61,7 @@ get '/video/show/:id' do
 end
 
 get '/video/watch/:id' do
-  process_request request, 'watch_video' do |req, username|
+  #process_request request, 'watch_video' do |req, username|
     video = Video.get(params[:id])
     if video
       @videos = {}
@@ -80,8 +80,7 @@ get '/video/watch/:id' do
     else
       redirect '/video/list'
     end
-
-  end
+  #end
 end
 
 get '/login' do
@@ -112,14 +111,14 @@ helpers do
   end
 
   def token username
-    JWT.encode payload(username), ENV['JWT_SECRET'], 'HS256'
+    JWT.encode payload(username), $os_env[:jwt_sec], 'HS256'
   end
 
   def payload username
     {
       exp: Time.now.to_i + 60 * 60,
       iat: Time.now.to_i,
-      iss: ENV['JWT_ISSUER'],
+      iss: $os_env[:jwt_iss],
       scopes: ['watch_video', 'upload_video', 'delete_video'],
       user: {
         username: username
@@ -129,8 +128,8 @@ helpers do
 
   def process_request req, scope
     begin
-      options = { algorithm: 'HS256', iss: ENV['JWT_ISSUER'] }
-      payload, header = JWT.decode session[:token], ENV['JWT_SECRET'], true, options
+      options = { algorithm: 'HS256', iss: $os_env[:jwt_iss] }
+      payload, header = JWT.decode session[:token], $os_env[:jwt_sec], true, options
 
       scopes, user = payload['scopes'], payload['user']
       username = user['username'].to_sym
