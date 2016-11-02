@@ -85,7 +85,7 @@ end
 get '/media/video/:video_url' do
   video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
   path = "#{$os_env[:home]}/public/media/video/#{video_name}"
-  File.open(path, "r")
+  f = File.open(path, "r").read
 end
 
 get '/login' do
