@@ -1,5 +1,3 @@
-require './database'
-require './config/config_reader'
 
 enable :sessions
 set :session_secret, $os_env[:sessions]
@@ -15,11 +13,8 @@ get '/' do
 end
 
 post '/video/create' do  
-  video            = create_video(params[:video])
-  image_attachment = video.attachments.new
-  video_attachment = video.attachments.new
-  image_attachment.handle_upload(params['image-file'])
-  video_attachment.handle_upload(params['video-file'])
+  video = create_video(params[:video])
+
   if video.save
     @message = 'Video was saved.'
   else
@@ -38,6 +33,10 @@ end
 get '/video/delete/:id' do
   process_request request, 'delete_video' do |req, username|
     video = Video.get params[:id]
+    video.attachments.each do |att|
+      File.delete(Base64.urlsafe_decode64(att[:path]))
+      File.delete(Base64.urlsafe_decode64(att[:link_path]))
+    end
     video.attachments.destroy
     video.destroy
     redirect '/'
@@ -81,6 +80,12 @@ get '/video/watch/:id' do
       redirect '/video/list'
     end
   #end
+end
+
+get '/media/video/:video_url' do
+  video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
+  path = "#{$os_env[:home]}/public/media/video/#{video_name}"
+  File.open(path, "r")
 end
 
 get '/login' do
@@ -156,7 +161,14 @@ helpers do
     video.each do |k,v|
       escaped_video[k] = h(v)
     end
-    Video.new(escaped_video)
+
+    new_video = Video.new(escaped_video)
+    image_attachment = new_video.attachments.new
+    video_attachment = new_video.attachments.new
+    image_attachment.handle_upload(params['image-file'])
+    video_attachment.handle_upload(params['video-file'])
+
+    new_video
   end
 
 end

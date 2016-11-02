@@ -1,3 +1,6 @@
+:javascript
+  $(document).ready(function(){
+    $('#not_downloadable').bind('contextmenu',function() { return false; }); });
 %h1= @title
-%video{ :src => @videos.values[0][:path], :controls => 'controls' }
+%video#not_downloadable{ :src => @videos.values[0][:path], :width => "500", :height => "360", :preload => 'auto', :controls => 'controls' }
   Your browser does not support the <code>video</code> element.
