@@ -1,8 +1,9 @@
 %form{ :action => "/login", :method => "post" }
   %label Username
   %input#username{ name: "username", type: "text"}
+  %br
   %label Password
   %input#password{ name: "password", type: "password"}
   %button.pure-button.pure-button-primary{ :type => "submit" } Submit
 
-%p= @mess
+%h3= @mess

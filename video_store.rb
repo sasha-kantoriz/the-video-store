@@ -9,18 +9,14 @@ end
 
 get '/' do
   @title = 'The Video Store'
+  @message = params[:mess] || 'Welcome To The Video Store!'
   haml :index
 end
 
-post '/video/create' do  
-  video = create_video(params[:video])
-
-  if video.save
-    @message = 'Video was saved.'
-  else
-    @message = 'Video was not saved.'
-  end
-  haml :create
+get '/video/list' do
+  @title = 'Available Videos'
+  @videos = Video.all(:order => [:created_at.desc])
+  haml :list
 end
 
 get '/video/new' do
@@ -28,6 +24,18 @@ get '/video/new' do
     @title = 'Upload Video'
     haml :new
   end
+end
+
+post '/video/create' do  
+  video = create_video(params[:video])
+  if video.save
+    @message = 'Video was saved.'
+  else
+    @message = 'Video was not saved.'
+  end
+  @videos = Video.all(:order => [:created_at.desc])
+
+  haml :list
 end
 
 get '/video/delete/:id' do
@@ -43,22 +51,6 @@ get '/video/delete/:id' do
   end
 end
 
-get '/video/list' do
-  @title = 'Available Videos'
-  @videos = Video.all(:order => [:title.desc])
-  haml :list
-end
-
-get '/video/show/:id' do
-  @video = Video.get(params[:id])
-  @title = @video.title
-  if @video
-    haml :show
-  else
-    redirect '/video/list'
-  end
-end
-
 get '/video/watch/:id' do
   #process_request request, 'watch_video' do |req, username|
     video = Video.get(params[:id])
@@ -71,7 +63,7 @@ get '/video/watch/:id' do
         end
       end
       if @videos.empty?
-        redirect "/video/show/#{video.id}"
+        redirect "/video/list"
       else
         @title = "Watch #{video.title}"
         haml :watch
@@ -86,6 +78,11 @@ get '/media/video/:video_url' do
   video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
   path = "#{$os_env[:home]}/public/media/video/#{video_name}"
   f = File.open(path, "r").read
+end
+
+get '/download/media/video/:video_url' do
+  video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
+  f = File.open(video_name, "r").read
 end
 
 get '/login' do
@@ -105,9 +102,9 @@ post '/login' do
   end
 end
 
-post '/logout' do
+get '/logout' do
   session[:token] = nil
-  redirect '/'
+  redirect '/?mess=Bye.'
 end
 
 helpers do
@@ -145,27 +142,18 @@ helpers do
         redirect '/login'
       end
 
-    rescue JWT::DecodeError
-      [401, { 'Content-Type' => 'text/plain' }, ['Sorry, unauthorized :(']]
-    rescue JWT::ExpiredSignature
-      [403, { 'Content-Type' => 'text/plain' }, ['Sorry, unauthorized :(']]
-    rescue JWT::InvalidIssuerError
-      [403, { 'Content-Type' => 'text/plain' }, ['Sorry, unauthorized :(']]
-    rescue JWT::InvalidIatError
-      [403, { 'Content-Type' => 'text/plain' }, ['Sorry, unauthorized :(']]
+    rescue 
+      redirect '/login?mess=Sorry, unauthorized :('
     end
   end
 
   def create_video(video)
-    escaped_video = {}
-    video.each do |k,v|
-      escaped_video[k] = h(v)
-    end
-
-    new_video = Video.new(escaped_video)
-    image_attachment = new_video.attachments.new
+    
+    new_video = Video.new(
+      :title => h(video[:title]),
+      :length => 240
+    )
     video_attachment = new_video.attachments.new
-    image_attachment.handle_upload(params['image-file'])
     video_attachment.handle_upload(params['video-file'])
 
     new_video

@@ -15,14 +15,13 @@
           %ul
             %li
               %a{ :href => "/" } Home
-            %li.pure-menu-selected
+            %li
               %a{ :href => "/video/new" } Upload Video
-            %li.pure-menu-selected
+            %li
               %a{ :href => "/video/list" } Available Videos
-            %li.pure-menu-selected
+            %li
               %a{ :href => "/login" } Login
-            %li.pure-menu-selected
-              %form{ :action => "/logout", :method => "post" }
-                %button.pure-button.pure-button-primary{ :type => "submit" } Logout
+            %li
+              %a{ :href => "/logout" } Logout
       .main
         = yield
