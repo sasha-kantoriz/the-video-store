@@ -1,6 +1,3 @@
-/db
-/media
 /public/media
-/videos
 Gemfile.lock
 unicorn.rb

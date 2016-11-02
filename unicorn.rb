@@ -18,7 +18,7 @@ listen "/tmp/unicorn.myapp.sock"
 
 # Number of processes
 # worker_processes 4
-worker_processes 2
+worker_processes 4
 
 # Time-out
-timeout 30
+timeout 120
