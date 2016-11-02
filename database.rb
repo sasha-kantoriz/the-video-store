@@ -11,8 +11,6 @@ class Video
 
   property :id,           Serial
   property :created_at,   DateTime
-  property :description,  String
-  property :genre,        Text
   property :length,       Integer
   property :title,        String
   property :updated_at,   DateTime
@@ -38,8 +36,8 @@ class Attachment
     supported_mime_type = $config.supported_mime_types.select { |type| type['extension'] == self.extension }.first
     return false unless supported_mime_type
 
-    abs_path = File.join(Dir.pwd, $config.file_properties.send(supported_mime_type['type']).absolute_path, file[:filename])
-    link_path = File.join(Dir.pwd, $config.file_properties.send(supported_mime_type['type']).link_path, file[:filename])
+    abs_path = File.join(Dir.pwd, $config.file_properties.video.absolute_path, file[:filename])
+    link_path = File.join(Dir.pwd, $config.file_properties.video.link_path, file[:filename])
 
     self.mime_type = file[:type]
     self.size      = File.size(file[:tempfile])
@@ -47,8 +45,19 @@ class Attachment
     self.path      = Base64.urlsafe_encode64(abs_path)    
     self.link_path = Base64.urlsafe_encode64(link_path)
 
+    safe_upload(abs_path, link_path, file[:tempfile], file[:filename])
+  end
+
+  def safe_upload(abs_path, link_path, tempfile, filename)
+    if File.exist?(abs_path) || File.exist?(link_path)
+      timestamp = Time.now.strftime('%y_%h_%d_%H-%M-%S__')
+      filename = timestamp + filename
+      abs_path = File.join(File.dirname(abs_path), filename)
+      link_path = File.join(File.dirname(link_path), filename)
+    end
+
     File.open(abs_path, 'wb') do |f|
-      f.write(file[:tempfile].read)
+      f.write(tempfile.read)
     end
 
     FileUtils.symlink(abs_path, link_path)
