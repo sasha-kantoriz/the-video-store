@@ -1,12 +1,32 @@
 
 configure do
-  DataMapper::Logger.new("#{$os_env[:home]}/../logs/data_mapper.log", :debug)
+  File.open("#{$os_env[:home]}/../logs/data_mapper.log", "a") {|log| log.puts "=" * 40; log.puts Time.now}
+  DataMapper::Logger.new("#{$os_env[:home]}/../logs/data_mapper.log")
   DataMapper::setup(:default, File.join('sqlite3://', Dir.pwd, '../db/development.db'))
+end
+
+class User
+  include DataMapper::Resource
+
+  has n, :videos
+
+  property :id,           Serial
+  property :login,        String
+  property :pass,         BCryptHash
+  property :email,        Text
+
+  property :created_at,   DateTime
+
+  def auth(attempted_password)
+    self.pass == attempted_password
+  end
+
 end
 
 class Video
   include DataMapper::Resource
 
+  belongs_to :user
   has n, :attachments
 
   property :id,           Serial
@@ -21,15 +41,15 @@ class Attachment
 
   belongs_to :video
 
-  property :id,         Serial
-  property :created_at, DateTime
-  property :extension,  String
-  property :filename,   Text
-  property :mime_type,  String
-  property :path,       Text
-  property :link_path,  Text
-  property :size,       Integer
-  property :updated_at, DateTime
+  property :id,           Serial
+  property :created_at,   DateTime
+  property :extension,    String
+  property :filename,     Text
+  property :mime_type,    String
+  property :path,         Text
+  property :link_path,    Text
+  property :size,         Integer
+  property :updated_at,   DateTime
 
   def handle_upload(file)
     self.extension = File.extname(file[:filename]).sub(/^\./, '').downcase
@@ -62,10 +82,6 @@ class Attachment
 
     FileUtils.symlink(abs_path, link_path)
   end
-end
-
-class User
-
 end
 
 configure :development do

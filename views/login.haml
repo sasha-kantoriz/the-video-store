@@ -1,9 +1,7 @@
-%form{ :action => "/login", :method => "post" }
-  %label Username
-  %input#username{ name: "username", type: "text"}
-  %br
-  %label Password
-  %input#password{ name: "password", type: "password"}
-  %button.pure-button.pure-button-primary{ :type => "submit" } Submit
-
-%h3= @mess
+%h3= @message
+%div#login_signup
+  %div#login_signin
+    %div#signin
+      %a#signin{ :href => "/signin" } Sign in
+    %div#signup
+      %a#signup{ :href => "/signup" } Sign up

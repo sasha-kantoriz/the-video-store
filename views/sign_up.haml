@@ -1,0 +1,11 @@
+%h3= @message
+%form{ :action => "/signup", :method => "post" }
+  %label Username
+  %input#username{ name: "user[login]", type: "text"}
+  %label Email
+  %input#username{ name: "user[email]", type: "text"}
+  %label Password
+  %input#password{ name: "user[pass]", type: "password"}
+  %label Confirm password
+  %input#password{ name: "user[conf_pass]", type: "password"}
+  %button.pure-button.pure-button-primary{ :type => "submit" } Submit

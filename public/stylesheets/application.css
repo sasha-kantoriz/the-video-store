@@ -1,2 +1,21 @@
-body { width: 100%; }
-.container { margin: 0 auto; max-width: 960px; }
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 0px;
+}
+a#profile:hover, a#profile:active{
+  background:transparent;
+}
+li#profile:hover, li#profile:active {
+  background:#000;
+}
+.subheading {
+  padding-bottom: 50px;
+  padding-left: 100px;
+}
+

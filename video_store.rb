@@ -4,13 +4,15 @@ set :session_secret, $os_env[:sessions]
 
 before do
   headers "Content-Type" => "text/html; charset=utf-8"
-  @logins = $config.admin_users
 end
+
 
 get '/' do
   @title = 'The Video Store'
-  @message = params[:mess] || 'Welcome To The Video Store!'
-  haml :index
+  @videos = Video.all.count
+  @users = User.all.count
+  
+  haml :index, :layout => false
 end
 
 get '/video/list' do
@@ -81,30 +83,45 @@ get '/media/video/:video_url' do
 end
 
 get '/download/media/video/:video_url' do
-  video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
-  f = File.open(video_name, "r").read
-end
-
-get '/login' do
-  @mess = params[:mess] if params[:mess]
-  haml :login
-end
-
-post '/login' do
-  username = h(params[:username])
-  password = Digest::SHA256.hexdigest(h(params[:password]))
-
-  if @logins[username] && @logins[username] == password
-    session[:token] = token(username)
-    redirect '/'
-  else
-    redirect '/login?mess=Unauthorized.'
+  process_request request, 'watch_video' do |req, username|
+    video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
+    f = File.open(video_name, "r").read
   end
 end
 
+get '/login' do
+
+  haml :login
+end
+
+post '/signin' do
+  user = User.get(h(params[:username]))
+  pass = h(params[:password])
+
+  if user && user.auth(pass)
+    session[:token] = token(user.login)
+    session[:username] = user.login
+    @message = "Welcome, #{user.login}!"
+    redirect '/'
+  else
+    @message = "Sorry, unauthorized :("
+    redirect '/login'
+  end
+end
+
+post '/signup' do
+  login = h(params[:user[:login]])
+  email = h(params[:user[:email]])
+  password = h(params[:user[:password]])
+
+  puts params
+
+end
+
 get '/logout' do
-  session[:token] = nil
-  redirect '/?mess=Bye.'
+  session.clear
+  @message = "Bye."
+  redirect '/'
 end
 
 helpers do
@@ -112,16 +129,16 @@ helpers do
     Rack::Utils.escape_html(text)
   end
 
-  def token username
-    JWT.encode payload(username), $os_env[:jwt_sec], 'HS256'
+  def token(username, scopes=['watch_video', 'upload_video'])
+    JWT.encode payload(username, scopes), $os_env[:jwt_sec], 'HS256'
   end
 
-  def payload username
+  def payload(username, scopes)
     {
       exp: Time.now.to_i + 60 * 60,
       iat: Time.now.to_i,
       iss: $os_env[:jwt_iss],
-      scopes: ['watch_video', 'upload_video', 'delete_video'],
+      scopes: scopes,
       user: {
         username: username
       }
@@ -139,11 +156,13 @@ helpers do
       if @logins[username] && scopes.include?(scope)
         yield req, username
       else
+        @message = "Not Available"
         redirect '/login'
       end
 
-    rescue 
-      redirect '/login?mess=Sorry, unauthorized :('
+    rescue
+      @message = 'Sorry, unauthorized :('
+      redirect '/login'
     end
   end
 
@@ -157,6 +176,16 @@ helpers do
     video_attachment.handle_upload(params['video-file'])
 
     new_video
+  end
+
+  def create_user(user)
+    new_user = User.new(
+      :login => h(user[:login]),
+      :email => h(user[:email]),
+      :pass => h(user[:pass])
+    )
+
+    new_user
   end
 
 end

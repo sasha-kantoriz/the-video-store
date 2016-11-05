@@ -1,1 +1,83 @@
-%h2= @message
+!!! 5
+%html{:lang => "en"}
+  %head
+    %meta{ :charset => "utf-8" }
+    %meta{ :name => "viewport", :content => "width=device-width, initial-scale=1" }
+    %meta{"http-equiv" => "X-UA-Compatible", :content => "IE=edge,chrome=1" }
+    
+    %title= @title || '/JokesTime'
+    
+    %link{ :rel => "icon", :type => "image/png", :href => "/favicon.png" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/bootstrap.min.css" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/bootstrap-theme.min.css" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/cyborg_bootstrap.css" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/application.css" }
+    %script{ :type => "text/javascript", :src => "/js/jquery-3.1.1.min.js"}
+    %script{ :src => "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js",                                                   :integrity => "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa", :crossorigin => "anonymous" }
+  %body
+    %nav.navbar.navbar-inverse
+      %div.container-fluid
+        %div.navbar-header
+          %a.navbar-brand{:href => "/"} /JokesTime
+        %div.navbar-collapse
+          %ul.nav.navbar-nav
+            %li
+              %a{:href => "/user/home"} 
+                Home
+                %span.sr-only (current) 
+            %li
+              %a{:href => "/video/list"} Videos
+            %li
+              %form.navbar-form
+                %div.form-group
+                  %input.form-control{:placeholder => "Search", :type => "text"}
+                %button.btn.btn-default{:type => "submit"} Submit
+          %ul.nav.navbar-nav.navbar-right
+            %li
+              %a{:href => "/about"} About
+            %li.dropdown
+              %a.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :role => "button"} 
+                Profile 
+                %span.caret
+              %ul.dropdown-menu
+                %li#profile
+                  %a#profile{:href => "/login"} Login
+                %li.divider{:role => "separator"}
+                %li#profile
+                  %a#profile{:href => "/logout"} Logout
+      %div.box
+        %div.container-fluid
+          %div{ :class => "row jumbotron subheading"  }
+            %div{ :class => "col-lg-6" }
+              %h2{  } /JokesTime news
+              %h3{  } Pure. Real. Entertainment.
+              %p{ :class => "lead" } 
+                We are passionate about talanted clip-makers 
+                and want to support them providing our services.
+                No form of entertainment is more pure or more engaging.   
+                That's why we've started this project.
+            %div{ :class => "col-lg-6" }
+              %h2 As Soon As Possible 
+
+          %div{ :class => "row marketing subheading" }
+            %div{ :class => "col-lg-6" }
+              %div.lsubheadings
+                %h4 Video Freedoom!
+                %p 
+                  You can upload/share your own videos or watch
+                  availables online and download (Yay!) them.
+              %div.lsubheadings
+                %h4 Keep calm and relax.
+                %p Easy way to smile and radiate positive vibes.
+                          
+            %div{ :class => "col-lg-6" }
+              %div.rsubheadings
+                %h4 Total videos:
+                %p= @videos
+              %div.rsubheadings
+                %h4 Total users:
+                %p= @users
+        
+    %footer.footer
+      %div.container-fluid.text-center
+        %p &copy;PARENTAL ADVISORY EXPLICIT CONTENT Inc, 2016
