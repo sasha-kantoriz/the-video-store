@@ -1,7 +1,11 @@
-%h3= @message
-%div#login_signup
-  %div#login_signin
-    %div#signin
-      %a#signin{ :href => "/signin" } Sign in
-    %div#signup
-      %a#signup{ :href => "/signup" } Sign up
+%div.box
+  %div#content.container-fluid
+    %div{ :class => "row jumbotron subheading"  }
+      %div{ :class => "col-lg-6" }
+        %div#signin
+          %h2 Have an acount:
+          = haml :sign_in, :layout => false
+      %div{ :class => "col-lg-6" }
+        %div#signup
+          %h2 Just create, if dont:
+          = haml :sign_up, :layout => false

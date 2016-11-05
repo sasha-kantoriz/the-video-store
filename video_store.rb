@@ -31,9 +31,9 @@ end
 post '/video/create' do  
   video = create_video(params[:video])
   if video.save
-    @message = 'Video was saved.'
+    flash[:success] = 'Video was saved.'
   else
-    @message = 'Video was not saved.'
+    flash[:error] = 'Video was not saved.'
   end
   @videos = Video.all(:order => [:created_at.desc])
 
@@ -49,6 +49,7 @@ get '/video/delete/:id' do
     end
     video.attachments.destroy
     video.destroy
+    flash[:info] = "Video was deleted."
     redirect '/'
   end
 end
@@ -65,12 +66,14 @@ get '/video/watch/:id' do
         end
       end
       if @videos.empty?
+        flash[:warning] = "No such video("
         redirect "/video/list"
       else
         @title = "Watch #{video.title}"
         haml :watch
       end
     else
+      flash[:warning] = "No such video("
       redirect '/video/list'
     end
   #end
@@ -85,42 +88,46 @@ end
 get '/download/media/video/:video_url' do
   process_request request, 'watch_video' do |req, username|
     video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
-    f = File.open(video_name, "r").read
+    # f = File.open(video_name, "r").read
+    send_file video_name
   end
 end
 
 get '/login' do
-
   haml :login
 end
 
 post '/signin' do
-  user = User.get(h(params[:username]))
+  user = User.first(:login => h(params[:username]))
   pass = h(params[:password])
-
   if user && user.auth(pass)
+
     session[:token] = token(user.login)
     session[:username] = user.login
-    @message = "Welcome, #{user.login}!"
+    flash[:success] = "Welcome, #{user.login}!"
     redirect '/'
   else
-    @message = "Sorry, unauthorized :("
+    flash[:error] = "Sorry, unauthorized :("
     redirect '/login'
   end
 end
 
 post '/signup' do
-  login = h(params[:user[:login]])
-  email = h(params[:user[:email]])
-  password = h(params[:user[:password]])
-
-  puts params
-
+  user = create_user(params[:user])
+  if user && user.save
+    flash[:success] = "Welcome, #{user.login}!"
+    session[:token] = token(user.login)
+    session[:username] = user.login
+    redirect '/'
+  else 
+    flash[:error] = "Sorry, unauthorized :("
+    redirect '/login'
+  end
 end
 
 get '/logout' do
   session.clear
-  @message = "Bye."
+  flash[:info] = "Bye."
   redirect '/'
 end
 
@@ -184,7 +191,6 @@ helpers do
       :email => h(user[:email]),
       :pass => h(user[:pass])
     )
-
     new_user
   end
 

@@ -1,7 +1,12 @@
-%h3= @message
-%form{ :action => "/signin", :method => "post" }
-  %label Username
-  %input#username{ name: "username", type: "text"}
-  %label Password
-  %input#password{ name: "password", type: "password"}
-  %button.pure-button.pure-button-primary{ :type => "submit" } Submit
+
+%form#login-input{ :action => "/signin", :method => "post" }
+  %div.form-row
+    %label#login-input Username
+  %div.form-row
+    %input#login-input{ name: "username", type: "text"}
+  %div.form-row
+    %label#login-input Password
+  %div.form-row
+    %input#login-input{ name: "password", type: "password"}
+  %div.form-row  
+    %button.btn.btn-success{ :type => "submit" } Sign in

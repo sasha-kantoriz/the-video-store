@@ -1,5 +1,6 @@
 Bundler.require
 require 'dm-migrations'
+require 'sinatra/flash'
 
 require './config/config_reader'
 require './database'

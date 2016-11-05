@@ -13,8 +13,8 @@ class User
   property :id,           Serial
   property :login,        String
   property :pass,         BCryptHash
-  property :email,        Text
-
+  property :email,        String
+  
   property :created_at,   DateTime
 
   def auth(attempted_password)

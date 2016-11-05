@@ -44,6 +44,9 @@ a {
   background-image: url('/image/space_2.jpg');
   background-size:cover;
   background-attachment:fixed;
+  float: left;
+  height: 100%;
+  width: 100%;
 }
 
 .divider {

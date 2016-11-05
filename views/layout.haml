@@ -8,69 +8,47 @@
     %title= @title || '/JokesTime'
     
     %link{ :rel => "icon", :type => "image/png", :href => "/favicon.png" }
-    %link{ :rel => "stylesheet", :href => "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css",            :integrity => "sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u",  :crossorigin => "anonymous" }
-    %link{ :rel => "stylesheet", :href => "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css",      :integrity => "sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp", :crossorigin => "anonymous" }
-    %link{ :rel => "stylesheet", :href => "/stylesheets/application.css" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/bootstrap.min.css" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/bootstrap-theme.min.css" }
     %link{ :rel => "stylesheet", :href => "/stylesheets/cyborg_bootstrap.css" }
+    %link{ :rel => "stylesheet", :href => "/stylesheets/application.css" }
     %script{ :type => "text/javascript", :src => "/js/jquery-3.1.1.min.js"}
-    %script{ :src => "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js",                                   :integrity => "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa", :crossorigin => "anonymous" }
+    %script{ :src => "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js",                                                   :integrity => "sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa", :crossorigin => "anonymous" }
   %body
     %nav.navbar.navbar-inverse
       %div.container-fluid
         %div.navbar-header
           %a.navbar-brand{:href => "/"} /JokesTime
-        %div#bs-example-navbar-collapse-1.collapse.navbar-collapse
+        %div.navbar-collapse
           %ul.nav.navbar-nav
             %li
               %a{:href => "/user/home"} 
-                Home 
-                %span.sr-only (current)
+                Home
+                %span.sr-only (current) 
             %li
-              %a{:href => "#"} Videos
+              %a{:href => "/video/list"} Videos
+            %li
+              %form.navbar-form
+                %div.form-group
+                  %input.form-control{:placeholder => "Search", :type => "text"}
+                %button.btn.btn-default{:type => "submit"} Submit
+          %ul.nav.navbar-nav.navbar-right
+            %li
+              %a{:href => "/about"} About
             %li.dropdown
               %a.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :role => "button"} 
-                Dropdown 
+                Profile 
                 %span.caret
               %ul.dropdown-menu
-                %li
-                  %a{:href => "#"} Action
-                %li
-                  %a{:href => "#"} Another action
-                %li
-                  %a{:href => "#"} Something else here
+                %li#profile
+                  %a#profile{:href => "/login"} Login
                 %li.divider{:role => "separator"}
-                %li
-                  %a{:href => "#"} Separated link
-                %li.divider{:role => "separator"}
-                %li
-                  %a{:href => "#"} One more separated link
-            %form.navbar-form.navbar-left
-              %div.form-group
-                %input.form-control{:placeholder => "Search", :type => "text"}
-              %button.btn.btn-default{:type => "submit"} Submit
-            %ul.nav.navbar-nav.navbar-right
-              %li
-                %a{:href => "#"} About
-              %li.dropdown
-                %a.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :href => "#", :role => "button"} 
-                  Profile 
-                  %span.caret
-                %ul.dropdown-menu
-                  %li
-                    %a{:href => "#"} Action
-                  %li
-                    %a{:href => "#"} Another action
-                  %li
-                    %a{:href => "#"} Something else here
-                  %li.divider{:role => "separator"}
-                  %li
-                    %a{:href => "#"} Separated link
-    / /.navbar-collapse
-  / /.container-fluid
-          
-  = yield
+                %li#profile
+                  %a#profile{:href => "/logout"} Logout
+      = styled_flash   
+      = yield
 
-  %footer{ :class => "footer" }
-    %p &copy; 2016 Company, PARENTAL ADVISORY EXPLICIT CONTENT Inc.
-
+    %footer.footer
+      %div.container-fluid.text-center
+        %p &copy;PARENTAL ADVISORY EXPLICIT CONTENT Inc, 2016
   
