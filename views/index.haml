@@ -28,9 +28,9 @@
             %li
               %a{:href => "/video/list"} Videos
             %li
-              %form.navbar-form
+              %form.navbar-form{ :action => "/search", :method => "post" }
                 %div.form-group
-                  %input.form-control{:placeholder => "Search", :type => "text"}
+                  %input.form-control{:placeholder => "Search", :name => "search", :type => "text"}
                 %button.btn.btn-default{:type => "submit"} Submit
           %ul.nav.navbar-nav.navbar-right
             %li

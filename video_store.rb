@@ -60,6 +60,8 @@ get '/video/watch/:id' do
         flash[:warning] = "No such video("
         redirect "/video/list"
       else
+        video.watch_count += 1
+        video.save
         @title = video.title
         haml :watch
       end
@@ -92,6 +94,18 @@ get '/user/home' do
   @user = User.first(:login => session[:username])
   @videos = @user.videos
   haml :user_home
+end
+
+post '/search' do
+  @videos = Video.all.select { |v|
+    v.title.include? params[:search]
+  }
+  if @videos.empty?
+    flash[:warning] = "No matching results for #{params[:search]}."
+    redirect '/video/list'
+  else
+    haml :list
+  end
 end
 
 get '/login' do
