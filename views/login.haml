@@ -1,9 +1,11 @@
-%form{ :action => "/login", :method => "post" }
-  %label Username
-  %input#username{ name: "username", type: "text"}
-  %br
-  %label Password
-  %input#password{ name: "password", type: "password"}
-  %button.pure-button.pure-button-primary{ :type => "submit" } Submit
-
-%h3= @mess
+%div.box
+  %div#content.container-fluid
+    %div{ :class => "row jumbotron subheading"  }
+      %div{ :class => "col-lg-6" }
+        %div#signin
+          %h2 Have an acount:
+          = haml :sign_in, :layout => false
+      %div{ :class => "col-lg-6" }
+        %div#signup
+          %h2 Just create, if dont:
+          = haml :sign_up, :layout => false

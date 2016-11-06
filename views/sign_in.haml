@@ -1,0 +1,12 @@
+
+%form#login-input{ :action => "/signin", :method => "post" }
+  %div.form-row
+    %label#login-input Username
+  %div.form-row
+    %input#login-input{ name: "username", type: "text"}
+  %div.form-row
+    %label#login-input Password
+  %div.form-row
+    %input#login-input{ name: "password", type: "password"}
+  %div.form-row  
+    %button.btn.btn-success{ :type => "submit" } Sign in

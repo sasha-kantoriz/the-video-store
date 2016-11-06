@@ -4,13 +4,14 @@ set :session_secret, $os_env[:sessions]
 
 before do
   headers "Content-Type" => "text/html; charset=utf-8"
-  @logins = $config.admin_users
 end
 
+
 get '/' do
-  @title = 'The Video Store'
-  @message = params[:mess] || 'Welcome To The Video Store!'
-  haml :index
+  @videos = Video.all.count
+  @users = User.all.count
+  
+  haml :index, :layout => false
 end
 
 get '/video/list' do
@@ -19,23 +20,15 @@ get '/video/list' do
   haml :list
 end
 
-get '/video/new' do
-  process_request request, 'upload_video' do |req, username|
-    @title = 'Upload Video'
-    haml :new
-  end
-end
-
-post '/video/create' do  
-  video = create_video(params[:video])
-  if video.save
-    @message = 'Video was saved.'
+post '/video/create' do
+  user_new_video = create_video(session[:username], params[:video])
+  if user_new_video.save
+    flash[:success] = 'Video was saved.'
   else
-    @message = 'Video was not saved.'
+    flash[:error] = 'Video was not saved.'
   end
-  @videos = Video.all(:order => [:created_at.desc])
 
-  haml :list
+  redirect '/user/home'
 end
 
 get '/video/delete/:id' do
@@ -47,7 +40,8 @@ get '/video/delete/:id' do
     end
     video.attachments.destroy
     video.destroy
-    redirect '/'
+    flash[:info] = "Video was deleted."
+    redirect '/user/home'
   end
 end
 
@@ -63,12 +57,16 @@ get '/video/watch/:id' do
         end
       end
       if @videos.empty?
+        flash[:warning] = "No such video("
         redirect "/video/list"
       else
-        @title = "Watch #{video.title}"
+        video.watch_count += 1
+        video.save
+        @title = video.title
         haml :watch
       end
     else
+      flash[:warning] = "No such video("
       redirect '/video/list'
     end
   #end
@@ -81,30 +79,70 @@ get '/media/video/:video_url' do
 end
 
 get '/download/media/video/:video_url' do
-  video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
-  f = File.open(video_name, "r").read
+  process_request request, 'download_video' do |req, username|
+    video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
+    # f = File.open(video_name, "r").read
+    send_file video_name
+  end
+end
+
+get '/user/home' do
+  if session[:username].nil? || session[:username].empty? || session[:token].nil?
+    flash[:info] = 'Sign in or register.'
+    redirect '/login'
+  end
+  @user = User.first(:login => session[:username])
+  @videos = @user.videos
+  haml :user_home
+end
+
+post '/search' do
+  @videos = Video.all.select { |v|
+    v.title.include? params[:search]
+  }
+  if @videos.empty?
+    flash[:warning] = "No matching results for #{params[:search]}."
+    redirect '/video/list'
+  else
+    haml :list
+  end
 end
 
 get '/login' do
-  @mess = params[:mess] if params[:mess]
   haml :login
 end
 
-post '/login' do
-  username = h(params[:username])
-  password = Digest::SHA256.hexdigest(h(params[:password]))
-
-  if @logins[username] && @logins[username] == password
-    session[:token] = token(username)
-    redirect '/'
+post '/signin' do
+  user = User.first(:login => h(params[:username]))
+  pass = h(params[:password])
+  if user && user.auth(pass)
+    flash[:success] = "Welcome, #{user.login}!"
+    session[:token] = token(user.login)
+    session[:username] = user.login
+    redirect '/user/home'
   else
-    redirect '/login?mess=Unauthorized.'
+    flash[:error] = "Sorry, unauthorized :("
+    redirect '/login'
+  end
+end
+
+post '/signup' do
+  user, error = create_user(params[:user])
+  if user && user.save
+    flash[:success] = "Welcome, #{user.login}!"
+    session[:token] = token(user.login)
+    session[:username] = user.login
+    redirect '/user/home'
+  else 
+    flash[:error] = error
+    redirect '/login'
   end
 end
 
 get '/logout' do
-  session[:token] = nil
-  redirect '/?mess=Bye.'
+  session.clear
+  flash[:info] = "Bye."
+  redirect '/'
 end
 
 helpers do
@@ -112,16 +150,16 @@ helpers do
     Rack::Utils.escape_html(text)
   end
 
-  def token username
-    JWT.encode payload(username), $os_env[:jwt_sec], 'HS256'
+  def token(username, scopes=['upload_video', 'download_video', 'delete_video'])
+    JWT.encode payload(username, scopes), $os_env[:jwt_sec], 'HS256'
   end
 
-  def payload username
+  def payload(username, scopes)
     {
       exp: Time.now.to_i + 60 * 60,
       iat: Time.now.to_i,
       iss: $os_env[:jwt_iss],
-      scopes: ['watch_video', 'upload_video', 'delete_video'],
+      scopes: scopes,
       user: {
         username: username
       }
@@ -134,29 +172,52 @@ helpers do
       payload, header = JWT.decode session[:token], $os_env[:jwt_sec], true, options
 
       scopes, user = payload['scopes'], payload['user']
-      username = user['username'].to_sym
+      username = user['username']
 
-      if @logins[username] && scopes.include?(scope)
+      if scopes.include?(scope)
         yield req, username
       else
+        flash[:warning] = "Not Available."
         redirect '/login'
       end
 
-    rescue 
-      redirect '/login?mess=Sorry, unauthorized :('
+    rescue
+      flash[:error] = 'Sorry, unauthorized :('
+      redirect '/login'
     end
   end
 
-  def create_video(video)
-    
-    new_video = Video.new(
+  def create_video(username, video)
+    user = User.first(:login => username)
+    new_video = user.videos.new(
       :title => h(video[:title]),
-      :length => 240
+      :watch_count => 0
     )
     video_attachment = new_video.attachments.new
     video_attachment.handle_upload(params['video-file'])
 
-    new_video
+    user
+  end
+
+  def create_user(user)
+    error = ''
+    if User.all(:login => h(user[:login])).count > 0
+      return nil, "This login is taken!"
+    elsif User.all(:email => h(user[:email])).count > 0
+      return nil, "Need unique email!"
+    elsif (h(user[:login]).length < 1) || (h(user[:email]).length < 1)
+      return nil, "Empty fields!"  
+    elsif h(user[:pass]).length < 6
+      return nil, "Too short password!"
+    elsif h(user[:pass]) != h(user[:conf_pass])
+      return nil, "Password not confirmed!"  
+    end
+    new_user = User.new(
+      :login => h(user[:login]),
+      :email => h(user[:email]),
+      :pass => h(user[:pass])
+    )
+    return new_user, error
   end
 
 end
