@@ -113,14 +113,14 @@ post '/signin' do
 end
 
 post '/signup' do
-  user = create_user(params[:user])
+  user, error = create_user(params[:user])
   if user && user.save
     flash[:success] = "Welcome, #{user.login}!"
     session[:token] = token(user.login)
     session[:username] = user.login
     redirect '/'
   else 
-    flash[:error] = "Sorry, unauthorized :("
+    flash[:error] = error
     redirect '/login'
   end
 end
@@ -186,12 +186,24 @@ helpers do
   end
 
   def create_user(user)
+    error = ''
+    if User.all(:login => h(user[:login])).count > 0
+      return nil, "This login is taken!"
+    elsif User.all(:email => h(user[:email])).count > 0
+      return nil, "Need unique email!"
+    elsif (h(user[:login]).length < 1) || (h(user[:email]).length < 1)
+      return nil, "Empty fields!"  
+    elsif h(user[:pass]).length < 6
+      return nil, "Too short password!"
+    elsif h(user[:pass]) != h(user[:conf_pass])
+      return nil, "Password not confirmed!"  
+    end
     new_user = User.new(
       :login => h(user[:login]),
       :email => h(user[:email]),
       :pass => h(user[:pass])
     )
-    new_user
+    return new_user, error
   end
 
 end
