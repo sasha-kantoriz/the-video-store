@@ -8,7 +8,6 @@ end
 
 
 get '/' do
-  @title = 'The Video Store'
   @videos = Video.all.count
   @users = User.all.count
   
@@ -21,23 +20,15 @@ get '/video/list' do
   haml :list
 end
 
-get '/video/new' do
-  process_request request, 'upload_video' do |req, username|
-    @title = 'Upload Video'
-    haml :new
-  end
-end
-
-post '/video/create' do  
-  video = create_video(params[:video])
-  if video.save
+post '/video/create' do
+  user_new_video = create_video(session[:username], params[:video])
+  if user_new_video.save
     flash[:success] = 'Video was saved.'
   else
     flash[:error] = 'Video was not saved.'
   end
-  @videos = Video.all(:order => [:created_at.desc])
 
-  haml :list
+  redirect '/user/home'
 end
 
 get '/video/delete/:id' do
@@ -50,7 +41,7 @@ get '/video/delete/:id' do
     video.attachments.destroy
     video.destroy
     flash[:info] = "Video was deleted."
-    redirect '/'
+    redirect '/user/home'
   end
 end
 
@@ -69,7 +60,7 @@ get '/video/watch/:id' do
         flash[:warning] = "No such video("
         redirect "/video/list"
       else
-        @title = "Watch #{video.title}"
+        @title = video.title
         haml :watch
       end
     else
@@ -86,11 +77,21 @@ get '/media/video/:video_url' do
 end
 
 get '/download/media/video/:video_url' do
-  process_request request, 'watch_video' do |req, username|
+  process_request request, 'download_video' do |req, username|
     video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
     # f = File.open(video_name, "r").read
     send_file video_name
   end
+end
+
+get '/user/home' do
+  if session[:username].nil? || session[:username].empty? || session[:token].nil?
+    flash[:info] = 'Sign in or register.'
+    redirect '/login'
+  end
+  @user = User.first(:login => session[:username])
+  @videos = @user.videos
+  haml :user_home
 end
 
 get '/login' do
@@ -101,11 +102,10 @@ post '/signin' do
   user = User.first(:login => h(params[:username]))
   pass = h(params[:password])
   if user && user.auth(pass)
-
+    flash[:success] = "Welcome, #{user.login}!"
     session[:token] = token(user.login)
     session[:username] = user.login
-    flash[:success] = "Welcome, #{user.login}!"
-    redirect '/'
+    redirect '/user/home'
   else
     flash[:error] = "Sorry, unauthorized :("
     redirect '/login'
@@ -118,7 +118,7 @@ post '/signup' do
     flash[:success] = "Welcome, #{user.login}!"
     session[:token] = token(user.login)
     session[:username] = user.login
-    redirect '/'
+    redirect '/user/home'
   else 
     flash[:error] = error
     redirect '/login'
@@ -136,7 +136,7 @@ helpers do
     Rack::Utils.escape_html(text)
   end
 
-  def token(username, scopes=['watch_video', 'upload_video'])
+  def token(username, scopes=['upload_video', 'download_video', 'delete_video'])
     JWT.encode payload(username, scopes), $os_env[:jwt_sec], 'HS256'
   end
 
@@ -158,31 +158,31 @@ helpers do
       payload, header = JWT.decode session[:token], $os_env[:jwt_sec], true, options
 
       scopes, user = payload['scopes'], payload['user']
-      username = user['username'].to_sym
+      username = user['username']
 
-      if @logins[username] && scopes.include?(scope)
+      if scopes.include?(scope)
         yield req, username
       else
-        @message = "Not Available"
+        flash[:warning] = "Not Available."
         redirect '/login'
       end
 
     rescue
-      @message = 'Sorry, unauthorized :('
+      flash[:error] = 'Sorry, unauthorized :('
       redirect '/login'
     end
   end
 
-  def create_video(video)
-    
-    new_video = Video.new(
+  def create_video(username, video)
+    user = User.first(:login => username)
+    new_video = user.videos.new(
       :title => h(video[:title]),
-      :length => 240
+      :watch_count => 0
     )
     video_attachment = new_video.attachments.new
     video_attachment.handle_upload(params['video-file'])
 
-    new_video
+    user
   end
 
   def create_user(user)

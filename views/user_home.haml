@@ -1,0 +1,32 @@
+%div.box
+  %div#content.container-fluid
+    %div{ :class => "row jumbotron subheading" }
+      %div{ :class => "col-lg-4" }
+        %h2 Simply upload and store.
+        %h3 Sharing your videos to others is pretty simple with our services.
+        = haml :new, :layout => false
+      %div{ :class => "col-lg-8" }
+        %div.container
+        %h2 Your videos:
+        %table.table.table-hover
+          %thead
+            %tr
+              %td Title
+              %td Watched times
+              %td Updloaded at
+              %td Watch
+              %td Delete
+              %td Download
+          %tbody
+            - @videos.each do |video|
+              %tr
+                %td
+                  %a{ :href => "/video/watch/#{video.id}" }= video.title
+                %td= video.watch_count
+                %td= video.created_at
+                %td
+                  %a.button.btn.btn-info{ :href => "/video/watch/#{video.id}" } Watch
+                %td
+                  %a.button.btn.btn-warning{ :href => "/video/delete/#{video.id}" } Delete
+                %td
+                  %a.button.btn.btn-success{ :href => "/download/media/video/#{video.attachments[0].path}" } Download

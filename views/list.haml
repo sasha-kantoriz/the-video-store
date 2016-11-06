@@ -1,26 +1,27 @@
-%h3= @message
-%table
-  %thead
-    %tr
-      %td Title
-      %td Length
-      %td Updloaded at
-      %td Watch
-      %td Delete
-      %td Download
-      %td Watch link
-  %tbody
-    - @videos.each do |video|
-      %tr
-        %td
-          %a{ :href => "/video/watch/#{video.id}" }= video.title
-        %td= video.length
-        %td= video.created_at
-        %td
-          %a.pure-button.pure-button-primary{ :href => "/video/watch/#{video.id}" } Watch
-        %td
-          %a.pure-button.pure-button-primary{ :href => "/video/delete/#{video.id}" } Delete
-        %td
-          %a.pure-button.pure-button-primary{ :href => "/download/media/video/#{video.attachments[0].path}" } Download
-        %td
-          %a.pure-button.pure-button-primary{ :href => "/video/watch/#{video.id}" } Watch link
+%div.box
+  %div#content.container-fluid
+    %div{ :class => "row jumbotron subheading" }
+      %div{ :class => "col-lg-8 " }
+        %h2 All videos:
+    %div{ :class => "row marketing subheading" }
+      %div{ :class => "col-lg-12" }
+        %div.container
+          %table.table.table-hover
+            %thead
+              %tr
+                %td Title
+                %td Watched times
+                %td Updloaded at
+                %td Watch
+                %td Download
+              %tbody
+                - @videos.each do |video|
+                  %tr
+                    %td
+                      %a{ :href => "/video/watch/#{video.id}" }= video.title
+                    %td= video.watch_count
+                    %td= video.created_at
+                    %td
+                      %a.button.btn.btn-info{ :href => "/video/watch/#{video.id}" } Watch
+                    %td
+                      %a.button.btn.btn-success{ :href => "/download/media/video/#{video.attachments[0].path}" } Download

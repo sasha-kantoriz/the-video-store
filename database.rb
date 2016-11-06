@@ -14,7 +14,7 @@ class User
   property :login,        String
   property :pass,         BCryptHash
   property :email,        String
-  
+
   property :created_at,   DateTime
 
   def auth(attempted_password)
@@ -31,7 +31,7 @@ class Video
 
   property :id,           Serial
   property :created_at,   DateTime
-  property :length,       Integer
+  property :watch_count,  Integer
   property :title,        String
   property :updated_at,   DateTime
 end

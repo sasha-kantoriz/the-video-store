@@ -1,13 +1,11 @@
-%form#video-form.pure-form.pure-form-aligned{ :action => "/video/create", :method => "post", :enctype => "multipart/form-data" }
-  %fieldset
-    %legend= @title
-    .pure-control-group
-      %label Title:
-      %input#title{ :type => "text", :name => "video[title]" }
-
-    .pure-control-group
-      %label Video:
-      %input#video-file{ :type => "file", :name => "video-file" }
-
-    .pure-controls
-      %button.pure-button.pure-button-primary{ :type => "submit" } Submit
+%form#login-input{ :action => "/video/create", :method => "post", :enctype => "multipart/form-data" }
+  %div.form-row
+    %label#login-input Title
+  %div.form-row
+    %input#login-input{ :type => "text", :name => "video[title]" }
+  %div.form-row
+    %label Video
+  %div.form-row
+    %input#login-input{ :type => "file", :name => "video-file" }
+  %div.form-row
+    %button.btn.btn-info{ :type => "submit" } Submit

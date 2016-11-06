@@ -1,8 +1,12 @@
-%h3= @message
+%div.box
+  %div#content.container-fluid
+    %div{ :class => "row jumbotron subheading" }
+      %div{ :class => "col-lg-6" }
+        %h3 Watching
+        %h2= @title
+        :javascript
+          $(document).ready(function(){
+            $('#not_downloadable').bind('contextmenu',function() { return false; }); });
 
-:javascript
-  $(document).ready(function(){
-    $('#not_downloadable').bind('contextmenu',function() { return false; }); });
-
-%video#not_downloadable{ :src => @videos.values[0][:path], :width => "500", :height => "360", :preload => 'auto', :controls => 'controls' }
-  Your browser does not support the <code>video</code> element.
+        %video#not_downloadable{ :src => @videos.values[0][:path], :width => "500", :height => "360", :preload => 'auto', :controls => 'controls' }
+          Your browser does not support the <code>video</code> element.
