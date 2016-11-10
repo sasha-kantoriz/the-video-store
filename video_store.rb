@@ -72,6 +72,31 @@ get '/video/watch/:id' do
   #end
 end
 
+get '/video/like/:id' do
+  video = Video.get(params[:id])
+  if video
+    @videos = {}
+    video.attachments.each do |attachment|
+      supported_mime_type = $config.supported_mime_types.select { |type| type['extension'] == attachment.extension }.first
+      if supported_mime_type['type'] === 'video'
+        @videos[attachment.id] = { :path => File.join($config.file_properties.video.link_path['public'.length..-1], attachment.filename) }
+      end
+    end
+    if @videos.empty?
+      flash[:warning] = "No such video("
+      redirect "/video/list"
+    else
+      video. likes += 1
+      video.save
+      flash[:success] = "Liked! Nice:)"
+      redirect "/video/list"
+    end
+  else
+    flash[:warning] = "No such video("
+    redirect '/video/list'
+  end
+end
+
 get '/media/video/:video_url' do
   video_name = Base64.urlsafe_decode64("#{params[:video_url]}")
   path = "#{$os_env[:home]}/public/media/video/#{video_name}"
@@ -191,7 +216,8 @@ helpers do
     user = User.first(:login => username)
     new_video = user.videos.new(
       :title => h(video[:title]),
-      :watch_count => 0
+      :watch_count => 0,
+      :likes => 0
     )
     video_attachment = new_video.attachments.new
     video_attachment.handle_upload(params['video-file'])
