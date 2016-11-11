@@ -145,6 +145,10 @@ get '/logout' do
   redirect '/'
 end
 
+get '/about' do
+	haml :about
+end
+
 helpers do
   def h(text)
     Rack::Utils.escape_html(text)
