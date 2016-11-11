@@ -4,12 +4,11 @@
       %div{ :class => "col-lg-6" }
         %h3 Watching
         %h2= @title
-        :javascript
-          $(document).ready(function(){
-            $('#not_downloadable').bind('contextmenu',function() { return false; }); });
-
-        %video#not_downloadable{ :id => "my-video", :src => @videos.values[0][:path], :width => "640", :height => "264", :preload => 'auto', :controls => 'controls', :class => "video-js", :poster => "MY_VIDEO_POSTER.jpg", 'data-setup' => "{}"}
-          Your browser does not support the <code>video</code> element.
-
-
+         
+        %div{:oncontextmenu => "return false"} 
+          %video#not_downloadable{ :id => "my-video", :src => @videos.values[0][:path], :width => "640", :height => "264", :preload => 'auto', :controls => 'controls', :class => "video-js", :poster => "MY_VIDEO_POSTER.jpg", 'data-setup' => "{}"}
+            
+          
 %script{ :src =>"http://vjs.zencdn.net/5.8.8/video.js"}
+
+
