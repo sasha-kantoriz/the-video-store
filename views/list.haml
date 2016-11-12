@@ -11,17 +11,19 @@
               %tr
                 %td Title
                 %td Watched times
+                %td Likes
                 %td Updloaded at
                 %td Watch
-                %td Download
+                %td Like
               %tbody
                 - @videos.each do |video|
                   %tr
                     %td
                       %a{ :href => "/video/watch/#{video.id}" }= video.title
                     %td= video.watch_count
+                    %td= video.likes
                     %td= video.created_at
                     %td
                       %a.button.btn.btn-info{ :href => "/video/watch/#{video.id}" } Watch
                     %td
-                      %a.button.btn.btn-success{ :href => "/download/media/video/#{video.attachments[0].path}" } Download
+                      %a.button.btn.btn-success{ :href => "/video/like/#{video.id}" } Like!

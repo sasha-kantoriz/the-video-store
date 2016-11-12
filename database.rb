@@ -32,6 +32,8 @@ class Video
   property :id,           Serial
   property :created_at,   DateTime
   property :watch_count,  Integer
+  property :likes,        Integer
+
   property :title,        String
   property :updated_at,   DateTime
 end
