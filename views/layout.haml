@@ -38,14 +38,15 @@
               %a{:href => "/about"} About
             %li.dropdown
               %a.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :role => "button"} 
-                Profile 
+                = session[:username] || 'Profile' 
                 %span.caret
               %ul.dropdown-menu
-                %li#profile
-                  %a#profile{:href => "/login"} Login
-                %li.divider{:role => "separator"}
-                %li#profile
-                  %a#profile{:href => "/logout"} Logout
+                - if session[:username].nil?
+                  %li#profile
+                    %a#profile{:href => "/login"} Login
+                - else
+                  %li#profile
+                    %a#profile{:href => "/logout"} Logout
       = styled_flash   
       = yield
 

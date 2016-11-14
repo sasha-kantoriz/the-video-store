@@ -1,10 +1,3 @@
-
-configure do
-  File.open("#{$os_env[:home]}/../logs/data_mapper.log", "a") {|log| log.puts "=" * 40; log.puts Time.now}
-  DataMapper::Logger.new("#{$os_env[:home]}/../logs/data_mapper.log")
-  DataMapper::setup(:default, File.join('sqlite3://', Dir.pwd, '../db/development.db'))
-end
-
 class User
   include DataMapper::Resource
 
@@ -55,11 +48,11 @@ class Attachment
 
   def handle_upload(file)
     self.extension = File.extname(file[:filename]).sub(/^\./, '').downcase
-    supported_mime_type = $config.supported_mime_types.select { |type| type['extension'] == self.extension }.first
+    supported_mime_type = Config::CONFIG['supported_mime_types'].select { |type| type['extension'] == self.extension }.first
     return false unless supported_mime_type
 
-    abs_path = File.join(Dir.pwd, $config.file_properties.video.absolute_path, file[:filename])
-    link_path = File.join(Dir.pwd, $config.file_properties.video.link_path, file[:filename])
+    abs_path = File.join(Dir.pwd, Config::CONFIG['file_properties']['video']['absolute_path'], file[:filename])
+    link_path = File.join(Dir.pwd, Config::CONFIG['file_properties']['video']['link_path'], file[:filename])
 
     self.mime_type = file[:type]
     self.size      = File.size(file[:tempfile])
@@ -84,9 +77,4 @@ class Attachment
 
     FileUtils.symlink(abs_path, link_path)
   end
-end
-
-configure :development do
-  DataMapper.finalize
-  DataMapper.auto_upgrade!
 end
