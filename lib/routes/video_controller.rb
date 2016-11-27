@@ -5,7 +5,7 @@ module Sinatra
 
       get '/video/list' do
         @title = 'Available Videos'
-        @videos = Video.all(:order => [:created_at.desc])
+        @videos = Video.all
         haml :list
       end
 

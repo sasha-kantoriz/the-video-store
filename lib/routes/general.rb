@@ -13,7 +13,7 @@ module Sinatra
         haml :about
       end
 
-      post '/search/:search' do
+      post '/search' do
         @videos = Video.all.select { |v|
           v.title.include? params[:search]
         }

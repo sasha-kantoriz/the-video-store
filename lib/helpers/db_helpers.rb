@@ -2,31 +2,34 @@ module DB_helpers
 
   def create_video(username, video)
     user = User.first(:login => username)
-    new_video = user.videos.new(
+    new_video = user.add_video(
           :title => h(video[:title]),
           :watch_count => 0,
-          :likes => 0
+          :likes => 0,
+          :created_at => Time.now,
+          #:video => File.open(video[:file][:tempfile])
     )
-    video_attachment = new_video.attachments.new
-    video_attachment.handle_upload(params['video-file'])
-
-    user
+    
+    new_video
   end
 
   def create_user(user)
     error = ''
-    if User.all(:login => h(user[:login])).count > 0
+    login_exist = User.find(:login => h(user[:login]))
+    email_exist = User.find(:email => h(user[:email]))
+
+    if !login_exist.nil? 
       return nil, "This login is taken!"
-    elsif User.all(:email => h(user[:email])).count > 0
+    elsif !email_exist.nil?
       return nil, "Need unique email!"
-    elsif (h(user[:login]).length < 1) || (h(user[:email]).length < 1)
+    elsif (h(user[:login]).length < 1) || (h(user[:email]).length < 5)
       return nil, "Empty fields!"  
     elsif h(user[:pass]).length < 6
       return nil, "Too short password!"
     elsif h(user[:pass]) != h(user[:conf_pass])
       return nil, "Password not confirmed!"  
     end
-    new_user = User.new(
+    new_user = User.create(
           :login => h(user[:login]),
           :email => h(user[:email]),
           :pass => h(user[:pass])

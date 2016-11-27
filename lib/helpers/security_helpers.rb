@@ -21,7 +21,7 @@
       end
 
       def process_request req, scope
-        begin
+        #begin
           options = { algorithm: 'HS256', iss: Config::OS_ENV[:jwt_iss] }
           payload, header = JWT.decode session[:token], Config::OS_ENV[:jwt_sec], true, options
 
@@ -35,9 +35,9 @@
             redirect '/login'
           end
 
-        rescue
-          flash[:error] = 'Sorry, unauthorized :('
+        #rescue
+          flash[:error] = "Sorry, unauthorized (#{scope}):(#{scopes})"
           redirect '/login'
-        end
+        #end
       end
     end

@@ -1,10 +1,10 @@
 source "https://rubygems.org"
 
-
-gem 'data_mapper'
-gem 'dm-core'
-gem 'dm-sqlite-adapter'
-gem 'dm-timestamps'
+gem 'streamio-ffmpeg'
+gem 'sidekiq'
+gem 'shrine'
+gem 'sinatra-sequel', :require => false 
+gem 'rack'
 gem 'haml'
 gem 'sass'
 gem 'sinatra', :require => false
