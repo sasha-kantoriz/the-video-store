@@ -7,7 +7,7 @@ module DB_helpers
           :watch_count => 0,
           :likes => 0,
           :created_at => Time.now,
-          #:video => File.open(video[:file][:tempfile])
+          :video => File.open(video[:file][:tempfile])
     )
     
     new_video
