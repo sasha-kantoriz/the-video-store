@@ -1,4 +1,3 @@
-Code from blog post: http://matt.weppler.me/2013/07/19/lets-build-a-sinatra-app.html
 
 Set following ENV variables:
 
@@ -7,4 +6,4 @@ Set following ENV variables:
 - JWT_ISSUER
 - JOKESTIME_HOME
 
-To run server: rackup
+To run server: unicorn [-c /path/to/unicorn.rb [-D]]
